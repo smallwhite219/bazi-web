@@ -303,167 +303,75 @@ const BaziChart = () => {
                         </div>
                     </div>
 
-                    {/* 偏財日 Wealth Days */}
-                    <div className="glass-card p-8">
-                        <div className="flex items-center justify-between mb-6">
+                    {/* 財運月曆 - Unified Calendar */}
+                    <div className="glass-card p-6 md:p-8">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-3">
                             <h3 className="text-xl font-bold flex items-center gap-3 text-gray-300">
-                                <span className={`w-1 h-6 rounded-full ${result.strength.isWealthFavorable ? 'bg-green-500' : 'bg-red-500'}`} />
-                                {result.strength.isWealthFavorable ? '偏財吉日' : '偏財凶日（避開）'}
+                                <span className="w-1 h-6 bg-amber-500 rounded-full" /> 財運月曆
                                 <span className="text-sm font-normal text-gray-500">（日元：{result.pillars.day.gan}）</span>
                             </h3>
                             <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => {
-                                        if (wealthMonth === 1) { setWealthMonth(12); setWealthYear(y => y - 1); }
-                                        else setWealthMonth(m => m - 1);
-                                    }}
-                                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
-                                >
-                                    ◀
-                                </button>
-                                <span className="text-lg font-bold text-white min-w-[120px] text-center">
-                                    {wealthYear} / {String(wealthMonth).padStart(2, '0')}
-                                </span>
-                                <button
-                                    onClick={() => {
-                                        if (wealthMonth === 12) { setWealthMonth(1); setWealthYear(y => y + 1); }
-                                        else setWealthMonth(m => m + 1);
-                                    }}
-                                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors"
-                                >
-                                    ▶
-                                </button>
+                                <button onClick={() => { if (wealthMonth === 1) { setWealthMonth(12); setWealthYear(y => y - 1); } else setWealthMonth(m => m - 1); }}
+                                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">◀</button>
+                                <span className="text-lg font-bold text-white min-w-[120px] text-center">{wealthYear} / {String(wealthMonth).padStart(2, '0')}</span>
+                                <button onClick={() => { if (wealthMonth === 12) { setWealthMonth(1); setWealthYear(y => y + 1); } else setWealthMonth(m => m + 1); }}
+                                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-lg text-gray-400 hover:text-white transition-colors">▶</button>
                             </div>
                         </div>
 
-                        {!result.strength.isWealthFavorable && (
-                            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 text-sm text-red-300 mb-4">
-                                ⚠️ 日主身弱，偏財為忌神。以下日期容易破財、被騙，應避開重大財務決策。
-                            </div>
-                        )}
-
-                        {wealthDays.length === 0 ? (
-                            <p className="text-gray-500 text-center py-4">本月無偏財日</p>
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                {wealthDays.map((wd, i) => {
-                                    const isGood = wd.isFavorable;
-                                    const isSuper = wd.level === '超級吉' || wd.level === '超級凶';
-                                    const isBig = wd.level === '大吉' || wd.level === '大凶';
-                                    return (
-                                        <div
-                                            key={i}
-                                            className={`rounded-xl p-4 border transition-all hover:scale-105 relative overflow-hidden ${isSuper
-                                                ? (isGood
-                                                    ? 'bg-gradient-to-br from-yellow-500/30 via-amber-500/20 to-orange-500/10 border-yellow-400/60 ring-1 ring-yellow-400/30'
-                                                    : 'bg-gradient-to-br from-red-600/30 via-red-500/20 to-rose-500/10 border-red-400/60 ring-1 ring-red-400/30')
-                                                : isGood
-                                                    ? (isBig
-                                                        ? 'bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border-amber-500/40'
-                                                        : 'bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30')
-                                                    : (isBig
-                                                        ? 'bg-gradient-to-br from-red-500/20 to-red-900/10 border-red-500/40'
-                                                        : 'bg-gradient-to-br from-purple-500/10 to-red-500/5 border-purple-500/30')
-                                                }`}
-                                        >
-                                            {isSuper && (
-                                                <div className="absolute top-0 right-0 text-[10px] px-2 py-0.5 rounded-bl-lg font-bold tracking-wider" style={{
-                                                    background: isGood ? 'linear-gradient(135deg, #f59e0b, #f97316)' : 'linear-gradient(135deg, #ef4444, #dc2626)',
-                                                    color: '#fff'
-                                                }}>
-                                                    {isGood ? '⭐ 超級' : '💥 超級'}
-                                                </div>
-                                            )}
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-2xl font-black text-white">{wd.day}</span>
-                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isSuper
-                                                    ? (isGood ? 'bg-yellow-500/40 text-yellow-200' : 'bg-red-600/40 text-red-200')
-                                                    : isGood
-                                                        ? (isBig ? 'bg-amber-500/30 text-amber-300' : 'bg-green-500/30 text-green-300')
-                                                        : (isBig ? 'bg-red-500/30 text-red-300' : 'bg-purple-500/30 text-purple-300')
-                                                    }`}>
-                                                    {wd.level}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm text-gray-400 font-mono">
-                                                {wd.stem}{wd.branch}日
-                                            </div>
-                                            <div className="text-[10px] text-gray-500 mt-1">
-                                                {wd.hint}
-                                            </div>
-                                            {(wd.heJu.length > 0 || wd.shenSha.length > 0) && (
-                                                <div className="flex flex-wrap gap-1 mt-2">
-                                                    {wd.heJu.map((h, j) => (
-                                                        <span key={`he-${j}`} className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${isGood ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'
-                                                            }`}>
-                                                            {h}
-                                                        </span>
-                                                    ))}
-                                                    {wd.shenSha.map((ss, j) => (
-                                                        <span key={`ss-${j}`} className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${ss.type === 'good'
-                                                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                                                                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                                                            }`} title={ss.description}>
-                                                            {ss.type === 'good' ? '✦ ' : '✧ '}{ss.name}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* 喜神吉日 Lucky Days */}
-                    <div className="glass-card p-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-xl font-bold flex items-center gap-3 text-gray-300">
-                                <span className="w-1 h-6 bg-emerald-500 rounded-full" /> 喜神吉日
-                                <span className="text-sm font-normal text-gray-500">（印星·比劫 → 生助日主）</span>
-                            </h3>
+                        {/* Legend */}
+                        <div className="flex flex-wrap gap-3 mb-4 text-[11px] text-gray-400">
+                            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-500/40 border border-amber-500/60" /> 偏財吉日</span>
+                            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-500/40 border border-red-500/60" /> 偏財凶日</span>
+                            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500/40 border border-emerald-500/60" /> 喜神吉日</span>
+                            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-400/40 border border-yellow-400/60" /> 超級日</span>
                         </div>
 
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-2 text-sm text-emerald-300 mb-4">
-                            ✨ 以下日期日主得助，適合重要決策、求財、簽約、學習。
-                        </div>
-
-                        {luckyDays.length === 0 ? (
-                            <p className="text-gray-500 text-center py-4">本月無喜神吉日</p>
-                        ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                                {luckyDays.map((ld, i) => (
-                                    <div
-                                        key={i}
-                                        className={`rounded-xl p-4 border transition-all hover:scale-105 ${ld.level === '大吉'
-                                            ? 'bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border-emerald-500/40'
-                                            : 'bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border-cyan-500/30'
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-2xl font-black text-white">{ld.day}</span>
-                                            <div className="flex items-center gap-1">
-                                                <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${ld.type === '印星' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-cyan-500/20 text-cyan-300'
-                                                    }`}>
-                                                    {ld.type}
-                                                </span>
-                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${ld.level === '大吉' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-cyan-500/30 text-cyan-300'
-                                                    }`}>
-                                                    {ld.level}
-                                                </span>
+                        {(() => {
+                            const daysInMonth = new Date(wealthYear, wealthMonth, 0).getDate();
+                            const firstDow = new Date(wealthYear, wealthMonth - 1, 1).getDay();
+                            const wMap = new Map(wealthDays.map(w => [w.day, w]));
+                            const lMap = new Map(luckyDays.map(l => [l.day, l]));
+                            const cells: JSX.Element[] = [];
+                            for (let i = 0; i < firstDow; i++) cells.push(<div key={`e${i}`} className="min-h-[80px]" />);
+                            for (let d = 1; d <= daysInMonth; d++) {
+                                const wd = wMap.get(d); const ld = lMap.get(d);
+                                const hw = !!wd; const hl = !!ld;
+                                const sup = wd && (wd.level === '超級吉' || wd.level === '超級凶');
+                                const wg = wd?.isFavorable;
+                                let bc = 'border-white/5', bg = 'bg-white/[0.02]';
+                                if (sup) { bc = wg ? 'border-yellow-400/60 ring-1 ring-yellow-400/20' : 'border-red-400/60 ring-1 ring-red-400/20'; bg = wg ? 'bg-gradient-to-br from-yellow-500/20 to-amber-500/5' : 'bg-gradient-to-br from-red-600/20 to-red-900/5'; }
+                                else if (hw && hl) { bc = 'border-amber-500/40'; bg = 'bg-gradient-to-br from-amber-500/10 to-emerald-500/5'; }
+                                else if (hw) { bc = wg ? 'border-amber-500/40' : 'border-red-500/40'; bg = wg ? 'bg-amber-500/5' : 'bg-red-500/5'; }
+                                else if (hl) { bc = 'border-emerald-500/40'; bg = 'bg-emerald-500/5'; }
+                                cells.push(
+                                    <div key={d} className={`min-h-[80px] rounded-lg border p-1.5 transition-all hover:scale-[1.02] relative overflow-hidden ${bc} ${bg}`}>
+                                        {sup && <div className="absolute top-0 right-0 text-[7px] px-1 py-0.5 rounded-bl font-bold" style={{ background: wg ? 'linear-gradient(135deg,#f59e0b,#f97316)' : 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff' }}>{wg ? '⭐' : '💥'}</div>}
+                                        <div className="flex items-start justify-between">
+                                            <span className={`text-base font-black ${hw || hl ? 'text-white' : 'text-gray-600'}`}>{d}</span>
+                                            <div className="flex flex-col items-end gap-0.5">
+                                                {hw && <span className={`text-[8px] font-bold px-1 py-0 rounded-full ${sup ? (wg ? 'bg-yellow-500/40 text-yellow-200' : 'bg-red-600/40 text-red-200') : wg ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300'}`}>{wd!.level}</span>}
+                                                {hl && <span className={`text-[8px] font-bold px-1 py-0 rounded-full ${ld!.type === '印星' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-cyan-500/30 text-cyan-300'}`}>{ld!.type}</span>}
                                             </div>
                                         </div>
-                                        <div className="text-sm text-gray-400 font-mono">
-                                            {ld.stem}{ld.branch}日
-                                        </div>
-                                        <div className="text-[10px] text-gray-500 mt-1">
-                                            {ld.hint}
-                                        </div>
+                                        {(hw || hl) && <div className="text-[9px] text-gray-500 font-mono">{(wd || ld)!.stem}{(wd || ld)!.branch}</div>}
+                                        {wd && wd.shenSha.length > 0 && <div className="flex flex-wrap gap-0.5 mt-0.5">{wd.shenSha.map((ss, j) => <span key={j} className={`text-[7px] px-1 rounded ${ss.type === 'good' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'}`} title={ss.description}>{ss.name}</span>)}</div>}
+                                        {wd && wd.heJu.length > 0 && <div className="flex flex-wrap gap-0.5 mt-0.5">{wd.heJu.map((h, j) => <span key={j} className="text-[7px] px-1 rounded bg-yellow-500/15 text-yellow-400">{h.replace(/（.*?）/, '')}</span>)}</div>}
+                                        {hl && !hw && <div className="text-[7px] text-emerald-400/70 mt-0.5 leading-tight">{ld!.hint.substring(0, 10)}</div>}
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                );
+                            }
+                            return (<>
+                                <div className="grid grid-cols-7 gap-1 mb-1">{['日', '一', '二', '三', '四', '五', '六'].map(x => <div key={x} className="text-center text-xs text-gray-500 font-medium py-1">{x}</div>)}</div>
+                                <div className="grid grid-cols-7 gap-1">{cells}</div>
+                            </>);
+                        })()}
+
+                        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-white/5 text-sm">
+                            <span className="text-gray-500">偏財日 <span className={result.strength.isWealthFavorable ? 'text-amber-400' : 'text-red-400'}>{wealthDays.length}</span> 天</span>
+                            <span className="text-gray-500">喜神日 <span className="text-emerald-400">{luckyDays.length}</span> 天</span>
+                            {wealthDays.filter(w => w.level === '超級吉' || w.level === '超級凶').length > 0 && <span className="text-gray-500">超級日 <span className="text-yellow-400">{wealthDays.filter(w => w.level === '超級吉' || w.level === '超級凶').length}</span> 天</span>}
+                        </div>
                     </div>
                 </motion.div>
             )}
