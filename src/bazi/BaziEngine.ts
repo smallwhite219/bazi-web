@@ -341,18 +341,58 @@ const WEALTH_MAP: { [key: string]: { stem: string; branches: string[] } } = {
     '癸': { stem: '丁', branches: ['午'] }
 };
 
+// ========== 三合六合加強法 ==========
+
+// 天干五合
+const TIANGAN_WUHE: [string, string][] = [
+    ['甲', '己'], ['乙', '庚'], ['丙', '辛'], ['丁', '壬'], ['戊', '癸']
+];
+
+// 地支六合
+const DIZHI_LIUHE: [string, string][] = [
+    ['子', '丑'], ['寅', '亥'], ['卯', '戌'], ['辰', '酉'], ['巳', '申'], ['午', '未']
+];
+
+// 地支三合
+const DIZHI_SANHE: [string, string, string][] = [
+    ['申', '子', '辰'], // 水局
+    ['亥', '卯', '未'], // 木局
+    ['寅', '午', '戌'], // 火局
+    ['巳', '酉', '丑'], // 金局
+];
+
+// 檢查天干是否五合
+const isTianganHe = (a: string, b: string): boolean => {
+    return TIANGAN_WUHE.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
+};
+
+// 檢查地支是否六合
+const isDizhiLiuhe = (a: string, b: string): boolean => {
+    return DIZHI_LIUHE.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
+};
+
+// 檢查地支是否三合（兩個地支屬於同一三合局）
+const isDizhiSanhe = (a: string, b: string): boolean => {
+    return DIZHI_SANHE.some(group => group.includes(a) && group.includes(b));
+};
+
 export interface WealthDay {
     date: string;       // YYYY-MM-DD
     day: number;        // 日
     stem: string;       // 日干
     branch: string;     // 日支
-    level: '大吉' | '中吉' | '大凶' | '中凶';
-    score: number;      // 5=大吉, 4=中吉, -5=大凶, -4=中凶
-    isFavorable: boolean; // 偏財是否為喜神
-    hint: string;       // 提示文字
+    level: '超級吉' | '大吉' | '中吉' | '超級凶' | '大凶' | '中凶';
+    score: number;
+    isFavorable: boolean;
+    hint: string;
+    heJu: string[];     // 合局描述列表
 }
 
-export const calculateWealthDays = (year: number, month: number, birthDayStem: string, isWealthFavorable: boolean): WealthDay[] => {
+export const calculateWealthDays = (
+    year: number, month: number,
+    birthDayStem: string, isWealthFavorable: boolean,
+    birthDayBranch?: string
+): WealthDay[] => {
     const wealthInfo = WEALTH_MAP[birthDayStem];
     if (!wealthInfo) return [];
 
@@ -372,18 +412,51 @@ export const calculateWealthDays = (year: number, month: number, birthDayStem: s
 
         if (matched) {
             const isStem = matched === 'stem';
+
+            // 檢查合局加強
+            const heJu: string[] = [];
+
+            // 天干五合：流日天干 vs 命盤日干
+            if (isTianganHe(dayStem, birthDayStem)) {
+                heJu.push(`天干五合（${dayStem}${birthDayStem}合）`);
+            }
+
+            // 地支六合：流日地支 vs 命盤日支
+            if (birthDayBranch && isDizhiLiuhe(dayBranch, birthDayBranch)) {
+                heJu.push(`地支六合（${dayBranch}${birthDayBranch}合）`);
+            }
+
+            // 地支三合：流日地支 vs 命盤日支
+            if (birthDayBranch && isDizhiSanhe(dayBranch, birthDayBranch)) {
+                heJu.push(`地支三合（${dayBranch}${birthDayBranch}同局）`);
+            }
+
+            const hasHeJu = heJu.length > 0;
+
             let level: WealthDay['level'];
             let score: number;
             let hint: string;
 
             if (isWealthFavorable) {
-                level = isStem ? '大吉' : '中吉';
-                score = isStem ? 5 : 4;
-                hint = isStem ? '天干偏財透出，求財大利' : '地支偏財藏根，暗中有財';
+                if (hasHeJu) {
+                    level = '超級吉';
+                    score = 6;
+                    hint = `超級偏財日！${isStem ? '天干偏財透出' : '地支偏財藏根'}＋${heJu.join('、')}`;
+                } else {
+                    level = isStem ? '大吉' : '中吉';
+                    score = isStem ? 5 : 4;
+                    hint = isStem ? '天干偏財透出，求財大利' : '地支偏財藏根，暗中有財';
+                }
             } else {
-                level = isStem ? '大凶' : '中凶';
-                score = isStem ? -5 : -4;
-                hint = isStem ? '天干偏財透出，破財風險高' : '地支偏財藏根，暗耗錢財';
+                if (hasHeJu) {
+                    level = '超級凶';
+                    score = -6;
+                    hint = `超級破財日！${isStem ? '天干偏財透出' : '地支偏財藏根'}＋${heJu.join('、')}`;
+                } else {
+                    level = isStem ? '大凶' : '中凶';
+                    score = isStem ? -5 : -4;
+                    hint = isStem ? '天干偏財透出，破財風險高' : '地支偏財藏根，暗耗錢財';
+                }
             }
 
             wealthDays.push({
@@ -394,7 +467,8 @@ export const calculateWealthDays = (year: number, month: number, birthDayStem: s
                 level,
                 score,
                 isFavorable: isWealthFavorable,
-                hint
+                hint,
+                heJu
             });
         }
     }

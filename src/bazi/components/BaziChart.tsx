@@ -21,7 +21,7 @@ const BaziChart = () => {
     // Auto-calculate wealth days when result or month changes
     const wealthDays = useMemo(() => {
         if (!result) return [];
-        return calculateWealthDays(wealthYear, wealthMonth, result.pillars.day.gan, result.strength.isWealthFavorable);
+        return calculateWealthDays(wealthYear, wealthMonth, result.pillars.day.gan, result.strength.isWealthFavorable, result.pillars.day.zhi);
     }, [result, wealthYear, wealthMonth]);
 
     // Auto-calculate lucky days (印星/比劫) for 身弱
@@ -348,24 +348,39 @@ const BaziChart = () => {
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                 {wealthDays.map((wd, i) => {
                                     const isGood = wd.isFavorable;
+                                    const isSuper = wd.level === '超級吉' || wd.level === '超級凶';
                                     const isBig = wd.level === '大吉' || wd.level === '大凶';
                                     return (
                                         <div
                                             key={i}
-                                            className={`rounded-xl p-4 border transition-all hover:scale-105 ${isGood
-                                                ? (isBig
-                                                    ? 'bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border-amber-500/40'
-                                                    : 'bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30')
-                                                : (isBig
-                                                    ? 'bg-gradient-to-br from-red-500/20 to-red-900/10 border-red-500/40'
-                                                    : 'bg-gradient-to-br from-purple-500/10 to-red-500/5 border-purple-500/30')
+                                            className={`rounded-xl p-4 border transition-all hover:scale-105 relative overflow-hidden ${isSuper
+                                                    ? (isGood
+                                                        ? 'bg-gradient-to-br from-yellow-500/30 via-amber-500/20 to-orange-500/10 border-yellow-400/60 ring-1 ring-yellow-400/30'
+                                                        : 'bg-gradient-to-br from-red-600/30 via-red-500/20 to-rose-500/10 border-red-400/60 ring-1 ring-red-400/30')
+                                                    : isGood
+                                                        ? (isBig
+                                                            ? 'bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border-amber-500/40'
+                                                            : 'bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30')
+                                                        : (isBig
+                                                            ? 'bg-gradient-to-br from-red-500/20 to-red-900/10 border-red-500/40'
+                                                            : 'bg-gradient-to-br from-purple-500/10 to-red-500/5 border-purple-500/30')
                                                 }`}
                                         >
+                                            {isSuper && (
+                                                <div className="absolute top-0 right-0 text-[10px] px-2 py-0.5 rounded-bl-lg font-bold tracking-wider" style={{
+                                                    background: isGood ? 'linear-gradient(135deg, #f59e0b, #f97316)' : 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                                    color: '#fff'
+                                                }}>
+                                                    {isGood ? '⭐ 超級' : '💥 超級'}
+                                                </div>
+                                            )}
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-2xl font-black text-white">{wd.day}</span>
-                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isGood
-                                                    ? (isBig ? 'bg-amber-500/30 text-amber-300' : 'bg-green-500/30 text-green-300')
-                                                    : (isBig ? 'bg-red-500/30 text-red-300' : 'bg-purple-500/30 text-purple-300')
+                                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isSuper
+                                                        ? (isGood ? 'bg-yellow-500/40 text-yellow-200' : 'bg-red-600/40 text-red-200')
+                                                        : isGood
+                                                            ? (isBig ? 'bg-amber-500/30 text-amber-300' : 'bg-green-500/30 text-green-300')
+                                                            : (isBig ? 'bg-red-500/30 text-red-300' : 'bg-purple-500/30 text-purple-300')
                                                     }`}>
                                                     {wd.level}
                                                 </span>
@@ -376,6 +391,16 @@ const BaziChart = () => {
                                             <div className="text-[10px] text-gray-500 mt-1">
                                                 {wd.hint}
                                             </div>
+                                            {wd.heJu.length > 0 && (
+                                                <div className="flex flex-wrap gap-1 mt-2">
+                                                    {wd.heJu.map((h, j) => (
+                                                        <span key={j} className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${isGood ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'
+                                                            }`}>
+                                                            {h}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     );
                                 })}
@@ -404,8 +429,8 @@ const BaziChart = () => {
                                     <div
                                         key={i}
                                         className={`rounded-xl p-4 border transition-all hover:scale-105 ${ld.level === '大吉'
-                                                ? 'bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border-emerald-500/40'
-                                                : 'bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border-cyan-500/30'
+                                            ? 'bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border-emerald-500/40'
+                                            : 'bg-gradient-to-br from-cyan-500/10 to-blue-500/5 border-cyan-500/30'
                                             }`}
                                     >
                                         <div className="flex items-center justify-between mb-2">
