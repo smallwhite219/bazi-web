@@ -324,7 +324,7 @@ const BaziChart = () => {
                             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-500/40 border border-amber-500/60" /> 偏財吉日</span>
                             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-500/40 border border-red-500/60" /> 偏財凶日</span>
                             <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500/40 border border-emerald-500/60" /> 喜神吉日</span>
-                            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-yellow-400/40 border border-yellow-400/60" /> 超級日</span>
+                            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-fuchsia-500/40 border border-fuchsia-500/60" /> 超級日</span>
                         </div>
 
                         {(() => {
@@ -340,17 +340,17 @@ const BaziChart = () => {
                                 const sup = wd && (wd.level === '超級吉' || wd.level === '超級凶');
                                 const wg = wd?.isFavorable;
                                 let bc = 'border-white/5', bg = 'bg-white/[0.02]';
-                                if (sup) { bc = wg ? 'border-yellow-400/60 ring-1 ring-yellow-400/20' : 'border-red-400/60 ring-1 ring-red-400/20'; bg = wg ? 'bg-gradient-to-br from-yellow-500/20 to-amber-500/5' : 'bg-gradient-to-br from-red-600/20 to-red-900/5'; }
+                                if (sup) { bc = wg ? 'border-fuchsia-400/60 ring-1 ring-fuchsia-400/30' : 'border-red-400/60 ring-1 ring-red-400/20'; bg = wg ? 'bg-gradient-to-br from-fuchsia-500/25 to-violet-500/10' : 'bg-gradient-to-br from-red-600/20 to-red-900/5'; }
                                 else if (hw && hl) { bc = 'border-amber-500/40'; bg = 'bg-gradient-to-br from-amber-500/10 to-emerald-500/5'; }
                                 else if (hw) { bc = wg ? 'border-amber-500/40' : 'border-red-500/40'; bg = wg ? 'bg-amber-500/5' : 'bg-red-500/5'; }
                                 else if (hl) { bc = 'border-emerald-500/40'; bg = 'bg-emerald-500/5'; }
                                 cells.push(
                                     <div key={d} className={`min-h-[80px] rounded-lg border p-1.5 transition-all hover:scale-[1.02] relative overflow-hidden ${bc} ${bg}`}>
-                                        {sup && <div className="absolute top-0 right-0 text-[7px] px-1 py-0.5 rounded-bl font-bold" style={{ background: wg ? 'linear-gradient(135deg,#f59e0b,#f97316)' : 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff' }}>{wg ? '⭐' : '💥'}</div>}
+                                        {sup && <div className="absolute top-0 right-0 text-[7px] px-1 py-0.5 rounded-bl font-bold" style={{ background: wg ? 'linear-gradient(135deg,#d946ef,#a855f7)' : 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff' }}>{wg ? '⭐' : '💥'}</div>}
                                         <div className="flex items-start justify-between">
                                             <span className={`text-base font-black ${hw || hl ? 'text-white' : 'text-gray-600'}`}>{d}</span>
                                             <div className="flex flex-col items-end gap-0.5">
-                                                {hw && <span className={`text-[8px] font-bold px-1 py-0 rounded-full ${sup ? (wg ? 'bg-yellow-500/40 text-yellow-200' : 'bg-red-600/40 text-red-200') : wg ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300'}`}>{wd!.level}</span>}
+                                                {hw && <span className={`text-[8px] font-bold px-1 py-0 rounded-full ${sup ? (wg ? 'bg-fuchsia-500/40 text-fuchsia-200' : 'bg-red-600/40 text-red-200') : wg ? 'bg-amber-500/30 text-amber-300' : 'bg-red-500/30 text-red-300'}`}>{wd!.level}</span>}
                                                 {hl && <span className={`text-[8px] font-bold px-1 py-0 rounded-full ${ld!.type === '印星' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-cyan-500/30 text-cyan-300'}`}>{ld!.type}</span>}
                                             </div>
                                         </div>
