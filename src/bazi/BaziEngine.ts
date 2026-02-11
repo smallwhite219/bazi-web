@@ -113,24 +113,24 @@ const analyzeStrength = (pillars: BaziResult['pillars']): StrengthAnalysis => {
     // 計算地支 (含藏干, 全四柱)
     const zhis = [pillars.year.zhi, pillars.month.zhi, pillars.day.zhi, pillars.hour.zhi];
     zhis.forEach(z => {
-        // 本氣
+        // 本氣 (權重 1)
         const mainEl = ZHI_WUXING[z];
         if (getRelation(dayElement, mainEl) === 'support') supportCount++;
         else drainCount++;
-        // 藏干
+        // 藏干 (餘氣/中氣, 權重較低 0.3)
         const hiddenGans = ZHI_HIDDEN_GAN[z] || [];
         hiddenGans.forEach(hg => {
             const hgEl = GAN_WUXING[hg];
-            if (getRelation(dayElement, hgEl) === 'support') supportCount += 0.5;
-            else drainCount += 0.5;
+            if (getRelation(dayElement, hgEl) === 'support') supportCount += 0.3;
+            else drainCount += 0.3;
         });
     });
 
-    // 月令加權 (月支本氣最重要, 得令+2)
+    // 月令加權 (月支本氣最重要, 得令額外+3, 傳統八字月令佔四成力量)
     const monthElement = ZHI_WUXING[monthZhi];
     const monthSupport = getRelation(dayElement, monthElement) === 'support';
-    if (monthSupport) supportCount += 2;
-    else drainCount += 2;
+    if (monthSupport) supportCount += 3;
+    else drainCount += 3;
 
     const score = supportCount - drainCount;
     const isStrong = score >= 0;
