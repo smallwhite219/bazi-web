@@ -354,16 +354,16 @@ const BaziChart = () => {
                                         <div
                                             key={i}
                                             className={`rounded-xl p-4 border transition-all hover:scale-105 relative overflow-hidden ${isSuper
-                                                    ? (isGood
-                                                        ? 'bg-gradient-to-br from-yellow-500/30 via-amber-500/20 to-orange-500/10 border-yellow-400/60 ring-1 ring-yellow-400/30'
-                                                        : 'bg-gradient-to-br from-red-600/30 via-red-500/20 to-rose-500/10 border-red-400/60 ring-1 ring-red-400/30')
-                                                    : isGood
-                                                        ? (isBig
-                                                            ? 'bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border-amber-500/40'
-                                                            : 'bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30')
-                                                        : (isBig
-                                                            ? 'bg-gradient-to-br from-red-500/20 to-red-900/10 border-red-500/40'
-                                                            : 'bg-gradient-to-br from-purple-500/10 to-red-500/5 border-purple-500/30')
+                                                ? (isGood
+                                                    ? 'bg-gradient-to-br from-yellow-500/30 via-amber-500/20 to-orange-500/10 border-yellow-400/60 ring-1 ring-yellow-400/30'
+                                                    : 'bg-gradient-to-br from-red-600/30 via-red-500/20 to-rose-500/10 border-red-400/60 ring-1 ring-red-400/30')
+                                                : isGood
+                                                    ? (isBig
+                                                        ? 'bg-gradient-to-br from-amber-500/20 to-yellow-500/10 border-amber-500/40'
+                                                        : 'bg-gradient-to-br from-green-500/10 to-emerald-500/5 border-green-500/30')
+                                                    : (isBig
+                                                        ? 'bg-gradient-to-br from-red-500/20 to-red-900/10 border-red-500/40'
+                                                        : 'bg-gradient-to-br from-purple-500/10 to-red-500/5 border-purple-500/30')
                                                 }`}
                                         >
                                             {isSuper && (
@@ -377,10 +377,10 @@ const BaziChart = () => {
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-2xl font-black text-white">{wd.day}</span>
                                                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isSuper
-                                                        ? (isGood ? 'bg-yellow-500/40 text-yellow-200' : 'bg-red-600/40 text-red-200')
-                                                        : isGood
-                                                            ? (isBig ? 'bg-amber-500/30 text-amber-300' : 'bg-green-500/30 text-green-300')
-                                                            : (isBig ? 'bg-red-500/30 text-red-300' : 'bg-purple-500/30 text-purple-300')
+                                                    ? (isGood ? 'bg-yellow-500/40 text-yellow-200' : 'bg-red-600/40 text-red-200')
+                                                    : isGood
+                                                        ? (isBig ? 'bg-amber-500/30 text-amber-300' : 'bg-green-500/30 text-green-300')
+                                                        : (isBig ? 'bg-red-500/30 text-red-300' : 'bg-purple-500/30 text-purple-300')
                                                     }`}>
                                                     {wd.level}
                                                 </span>
@@ -391,12 +391,20 @@ const BaziChart = () => {
                                             <div className="text-[10px] text-gray-500 mt-1">
                                                 {wd.hint}
                                             </div>
-                                            {wd.heJu.length > 0 && (
+                                            {(wd.heJu.length > 0 || wd.shenSha.length > 0) && (
                                                 <div className="flex flex-wrap gap-1 mt-2">
                                                     {wd.heJu.map((h, j) => (
-                                                        <span key={j} className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${isGood ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'
+                                                        <span key={`he-${j}`} className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${isGood ? 'bg-yellow-500/20 text-yellow-300' : 'bg-red-500/20 text-red-300'
                                                             }`}>
                                                             {h}
+                                                        </span>
+                                                    ))}
+                                                    {wd.shenSha.map((ss, j) => (
+                                                        <span key={`ss-${j}`} className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${ss.type === 'good'
+                                                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                                                                : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                                                            }`} title={ss.description}>
+                                                            {ss.type === 'good' ? '✦ ' : '✧ '}{ss.name}
                                                         </span>
                                                     ))}
                                                 </div>

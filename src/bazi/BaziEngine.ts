@@ -376,6 +376,57 @@ const isDizhiSanhe = (a: string, b: string): boolean => {
     return DIZHI_SANHE.some(group => group.includes(a) && group.includes(b));
 };
 
+// ========== 財運神煞查表 ==========
+
+// 驛馬 (Post Horse): 根據日支所屬三合局查
+// 申子辰→寅, 寅午戌→申, 巳酉丑→亥, 亥卯未→巳
+const YIMA_MAP: { [key: string]: string } = {
+    '申': '寅', '子': '寅', '辰': '寅',
+    '寅': '申', '午': '申', '戌': '申',
+    '巳': '亥', '酉': '亥', '丑': '亥',
+    '亥': '巳', '卯': '巳', '未': '巳',
+};
+
+// 祿神 (Prosperity): 根據日干查
+const LUSHEN_MAP: { [key: string]: string } = {
+    '甲': '寅', '乙': '卯', '丙': '巳', '丁': '午', '戊': '巳',
+    '己': '午', '庚': '申', '辛': '酉', '壬': '亥', '癸': '子',
+};
+
+// 羊刃 (Blade): 根據日干查
+const YANGREN_MAP: { [key: string]: string } = {
+    '甲': '卯', '乙': '寅', '丙': '午', '丁': '巳', '戊': '午',
+    '己': '巳', '庚': '酉', '辛': '申', '壬': '子', '癸': '亥',
+};
+
+// 劫財 (Rob Wealth): 同五行異陰陽的天干
+const JIECAI_MAP: { [key: string]: string } = {
+    '甲': '乙', '乙': '甲', '丙': '丁', '丁': '丙', '戊': '己',
+    '己': '戊', '庚': '辛', '辛': '庚', '壬': '癸', '癸': '壬',
+};
+
+const STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+const BRANCHES = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+
+// 空亡 (Void): 根據日柱所屬旬計算
+const getKongWang = (dayStem: string, dayBranch: string): string[] => {
+    const stemIdx = STEMS.indexOf(dayStem);
+    const branchIdx = BRANCHES.indexOf(dayBranch);
+    // 找到這一旬的起始地支 index
+    const startBranch = ((branchIdx - stemIdx) % 12 + 12) % 12;
+    // 空亡 = 旬中沒有分配到天干的最後兩個地支
+    return [
+        BRANCHES[(startBranch + 10) % 12],
+        BRANCHES[(startBranch + 11) % 12]
+    ];
+};
+
+export interface ShenSha {
+    name: string;
+    type: 'good' | 'bad';
+    description: string;
+}
+
 export interface WealthDay {
     date: string;       // YYYY-MM-DD
     day: number;        // 日
@@ -386,6 +437,7 @@ export interface WealthDay {
     isFavorable: boolean;
     hint: string;
     heJu: string[];     // 合局描述列表
+    shenSha: ShenSha[]; // 神煞列表
 }
 
 export const calculateWealthDays = (
@@ -395,6 +447,11 @@ export const calculateWealthDays = (
 ): WealthDay[] => {
     const wealthInfo = WEALTH_MAP[birthDayStem];
     if (!wealthInfo) return [];
+
+    // 預計算命盤的空亡地支
+    const kongWangBranches = birthDayBranch
+        ? getKongWang(birthDayStem, birthDayBranch)
+        : [];
 
     const daysInMonth = new Date(year, month, 0).getDate();
     const wealthDays: WealthDay[] = [];
@@ -413,51 +470,117 @@ export const calculateWealthDays = (
         if (matched) {
             const isStem = matched === 'stem';
 
-            // 檢查合局加強
+            // ===== 1. 合局加強 =====
             const heJu: string[] = [];
-
-            // 天干五合：流日天干 vs 命盤日干
             if (isTianganHe(dayStem, birthDayStem)) {
                 heJu.push(`天干五合（${dayStem}${birthDayStem}合）`);
             }
-
-            // 地支六合：流日地支 vs 命盤日支
             if (birthDayBranch && isDizhiLiuhe(dayBranch, birthDayBranch)) {
                 heJu.push(`地支六合（${dayBranch}${birthDayBranch}合）`);
             }
-
-            // 地支三合：流日地支 vs 命盤日支
             if (birthDayBranch && isDizhiSanhe(dayBranch, birthDayBranch)) {
                 heJu.push(`地支三合（${dayBranch}${birthDayBranch}同局）`);
             }
 
+            // ===== 2. 神煞判斷 =====
+            const shenSha: ShenSha[] = [];
+            let shenShaScore = 0; // 正=吉, 負=凶
+
+            // 天財: 天干有偏財透出 (isStem === true)
+            if (isStem) {
+                shenSha.push({ name: '天財', type: 'good', description: '偏財透出天干，財運增強' });
+                shenShaScore += 1;
+            }
+
+            // 驛馬: 流日地支 = 命盤日支的驛馬
+            if (birthDayBranch && YIMA_MAP[birthDayBranch] === dayBranch) {
+                shenSha.push({ name: '驛馬', type: 'good', description: '動中求財，出外有利' });
+                shenShaScore += 1;
+            }
+
+            // 祿神: 流日地支 = 命盤日干的祿
+            if (LUSHEN_MAP[birthDayStem] === dayBranch) {
+                shenSha.push({ name: '祿神', type: 'good', description: '正財之神，穩定進財' });
+                shenShaScore += 1;
+            }
+
+            // 羊刃: 流日地支 = 命盤日干的羊刃
+            if (YANGREN_MAP[birthDayStem] === dayBranch) {
+                shenSha.push({ name: '羊刃', type: 'bad', description: '破財凶星，衝動損財' });
+                shenShaScore -= 1;
+            }
+
+            // 劫財: 流日天干 = 命盤日干的劫財
+            if (JIECAI_MAP[birthDayStem] === dayStem) {
+                shenSha.push({ name: '劫財', type: 'bad', description: '財被劫走，防小人' });
+                shenShaScore -= 1;
+            }
+
+            // 空亡: 流日地支落入命盤日柱的空亡
+            if (kongWangBranches.includes(dayBranch)) {
+                shenSha.push({ name: '空亡', type: 'bad', description: '財運落空，不宜投資' });
+                shenShaScore -= 1;
+            }
+
+            // ===== 3. 綜合評分 =====
             const hasHeJu = heJu.length > 0;
+            const boostTotal = (hasHeJu ? 1 : 0) + shenShaScore;
 
             let level: WealthDay['level'];
             let score: number;
             let hint: string;
 
             if (isWealthFavorable) {
-                if (hasHeJu) {
+                // 身強: 偏財是喜神
+                if (boostTotal >= 2) {
                     level = '超級吉';
                     score = 6;
-                    hint = `超級偏財日！${isStem ? '天干偏財透出' : '地支偏財藏根'}＋${heJu.join('、')}`;
+                    hint = '超級偏財日！';
+                } else if (isStem || boostTotal >= 1) {
+                    level = '大吉';
+                    score = 5;
+                    hint = isStem ? '天干偏財透出，求財大利' : '偏財藏根＋有吉神加持';
                 } else {
-                    level = isStem ? '大吉' : '中吉';
-                    score = isStem ? 5 : 4;
-                    hint = isStem ? '天干偏財透出，求財大利' : '地支偏財藏根，暗中有財';
+                    level = '中吉';
+                    score = 4;
+                    hint = '地支偏財藏根，暗中有財';
+                }
+                // 如果有凶煞拖後腿
+                if (shenShaScore < 0 && level !== '中吉') {
+                    level = '中吉';
+                    score = 3;
+                    hint = '有偏財但神煞干擾，謹慎求財';
                 }
             } else {
-                if (hasHeJu) {
+                // 身弱: 偏財是忌神
+                if (boostTotal >= 2) {
                     level = '超級凶';
                     score = -6;
-                    hint = `超級破財日！${isStem ? '天干偏財透出' : '地支偏財藏根'}＋${heJu.join('、')}`;
+                    hint = '超級破財日！';
+                } else if (isStem || boostTotal >= 1) {
+                    level = '大凶';
+                    score = -5;
+                    hint = isStem ? '天干偏財透出，破財風險高' : '偏財藏根＋凶煞加重';
                 } else {
-                    level = isStem ? '大凶' : '中凶';
-                    score = isStem ? -5 : -4;
-                    hint = isStem ? '天干偏財透出，破財風險高' : '地支偏財藏根，暗耗錢財';
+                    level = '中凶';
+                    score = -4;
+                    hint = '地支偏財藏根，暗耗錢財';
+                }
+                // 如果有吉神緩解
+                if (shenShaScore > 0 && level !== '中凶') {
+                    level = '中凶';
+                    score = -3;
+                    hint = '雖有破財跡象，但有吉神化解';
                 }
             }
+
+            // 組合描述
+            const parts: string[] = [hint];
+            if (heJu.length > 0) parts.push(heJu.join('、'));
+            const goodSha = shenSha.filter(s => s.type === 'good').map(s => s.name);
+            const badSha = shenSha.filter(s => s.type === 'bad').map(s => s.name);
+            if (goodSha.length > 0) parts.push(`吉神：${goodSha.join('、')}`);
+            if (badSha.length > 0) parts.push(`凶煞：${badSha.join('、')}`);
 
             wealthDays.push({
                 date: `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
@@ -467,8 +590,9 @@ export const calculateWealthDays = (
                 level,
                 score,
                 isFavorable: isWealthFavorable,
-                hint,
-                heJu
+                hint: parts.join('｜'),
+                heJu,
+                shenSha
             });
         }
     }
