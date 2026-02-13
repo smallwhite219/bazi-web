@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { calculateBazi, BaziResult, calculateWealthDays, calculateLuckyDays, WealthDay } from '../BaziEngine';
 import type { LuckyDay } from '../BaziEngine';
+import { calculateLifePath, calculateFortune, generateLuckyNumbers } from '../LifePathCalc';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 
@@ -348,7 +349,7 @@ const BaziChart = () => {
                                     else if (hw) { bc = wg ? 'border-amber-500/40' : 'border-red-500/40'; bg = wg ? 'bg-amber-500/5' : 'bg-red-500/5'; }
                                     else if (hl) { bc = 'border-emerald-500/40'; bg = 'bg-emerald-500/5'; }
                                     cells.push(
-                                        <div key={d} onClick={() => (hw || hl) && setSelectedDay({ day: d, wd: wd || null, ld: ld || null })} className={`min-h-[80px] rounded-lg border p-1.5 transition-all hover:scale-[1.02] relative overflow-hidden ${(hw || hl) ? 'cursor-pointer' : ''} ${bc} ${bg}`}>
+                                        <div key={d} onClick={() => setSelectedDay({ day: d, wd: wd || null, ld: ld || null })} className={`min-h-[80px] rounded-lg border p-1.5 transition-all hover:scale-[1.02] relative overflow-hidden cursor-pointer ${bc} ${bg}`}>
                                             {sup && <div className="absolute top-0 right-0 text-[7px] px-1 py-0.5 rounded-bl font-bold" style={{ background: wg ? 'linear-gradient(135deg,#d946ef,#a855f7)' : 'linear-gradient(135deg,#ef4444,#dc2626)', color: '#fff' }}>{wg ? '⭐' : '💥'}</div>}
                                             <div className="flex items-start justify-between">
                                                 <span className={`text-base font-black ${hw || hl ? 'text-white' : 'text-gray-600'}`}>{d}</span>
@@ -404,7 +405,7 @@ const BaziChart = () => {
                             <div className="flex flex-wrap gap-2 mb-4">
                                 {sd.wd && (
                                     <span className={`text-sm font-bold px-3 py-1 rounded-full ${sd.wd.level.includes('吉') ? (sd.wd.level === '超級吉' ? 'bg-fuchsia-500/30 text-fuchsia-200' : 'bg-amber-500/30 text-amber-300')
-                                            : (sd.wd.level === '超級凶' ? 'bg-red-600/30 text-red-200' : 'bg-red-500/30 text-red-300')
+                                        : (sd.wd.level === '超級凶' ? 'bg-red-600/30 text-red-200' : 'bg-red-500/30 text-red-300')
                                         }`}>
                                         偏財 {sd.wd.level}
                                     </span>
@@ -429,14 +430,61 @@ const BaziChart = () => {
                             <div className="space-y-1.5">
                                 {generateAdvice(sd.wd, sd.ld).map((line, i) => (
                                     <p key={i} className={`text-sm leading-relaxed ${line === '' ? 'h-2'
-                                            : line.startsWith('🟢') || line.startsWith('🔴') || line.startsWith('🔗') ? 'text-gray-300 font-medium mt-2'
-                                                : line.startsWith('  ·') ? 'text-gray-400 pl-2'
-                                                    : 'text-gray-300'
+                                        : line.startsWith('🟢') || line.startsWith('🔴') || line.startsWith('🔗') ? 'text-gray-300 font-medium mt-2'
+                                            : line.startsWith('  ·') ? 'text-gray-400 pl-2'
+                                                : 'text-gray-300'
                                         }`}>
                                         {line}
                                     </p>
                                 ))}
                             </div>
+
+                            {/* 今日幸運解碼 — from life-path-app */}
+                            {(() => {
+                                const birthDate = new Date(1987, 5, 5); // 1987/06/05
+                                const targetDate = new Date(wealthYear, wealthMonth - 1, sd.day);
+                                const lp = calculateLifePath(birthDate);
+                                const fortune = calculateFortune(birthDate, targetDate);
+                                const lucky = generateLuckyNumbers(lp, targetDate);
+                                return (
+                                    <div className="mt-6 pt-5 border-t border-white/10">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h4 className="text-lg font-bold flex items-center gap-2 text-amber-400">
+                                                ✨ 今日幸運解碼
+                                            </h4>
+                                            <span className="text-[10px] px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-500 font-bold tracking-wider uppercase">主命數 {lp}</span>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-2 mb-5">
+                                            {[
+                                                { label: '流年', value: fortune.yearEnergy, color: 'from-violet-500/20 to-indigo-500/10 border-violet-500/30' },
+                                                { label: '流月', value: fortune.monthEnergy, color: 'from-fuchsia-500/20 to-rose-500/10 border-fuchsia-500/30' },
+                                                { label: '流日', value: fortune.dayEnergy, color: 'from-sky-500/20 to-emerald-500/10 border-sky-500/30' }
+                                            ].map(f => (
+                                                <div key={f.label} className={`text-center p-3 rounded-xl bg-gradient-to-br border ${f.color}`}>
+                                                    <div className="text-[10px] text-gray-400 font-bold tracking-widest mb-1">{f.label}</div>
+                                                    <div className="text-2xl font-black text-white">{f.value}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <p className="text-xs text-gray-500 mb-3">根據主命數 {lp} 與宇宙波頻生成的專屬號碼 (範圍 1-39)</p>
+                                        <div className="flex flex-wrap justify-center gap-3">
+                                            {lucky.map((n, i) => (
+                                                <motion.div
+                                                    key={i}
+                                                    initial={{ scale: 0, rotate: -10 }}
+                                                    animate={{ scale: 1, rotate: 0 }}
+                                                    transition={{ delay: i * 0.08, type: 'spring', stiffness: 200 }}
+                                                    className="w-12 h-12 flex items-center justify-center bg-gradient-to-b from-gray-800 to-black border border-amber-500/30 rounded-full text-lg font-black text-amber-400 shadow-lg hover:border-amber-400/60 hover:scale-110 transition-all"
+                                                >
+                                                    {n}
+                                                </motion.div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                         </motion.div>
                     </div>
                 );
